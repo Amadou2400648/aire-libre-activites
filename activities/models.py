@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser,Group, Permission
+from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.core.validators import MinLengthValidator, MaxLengthValidator
@@ -8,26 +8,30 @@ class User(AbstractUser):
     avatar = models.ImageField(upload_to='avatars/', null=True,blank=True )
     bio = models.TextField(max_length=500, null=True,blank=True )
 
-    groups = models.ManyToManyField(
-        Group,
-        verbose_name="groupes",
+    ADMIN = 1
+    PARTICIPANT = 2
+    ORGANISATEUR = 3
+
+    ROLES_UTILISATEURS = [
+        (ADMIN, 'Admin'),
+        (PARTICIPANT, 'Participant'),
+        (ORGANISATEUR, 'Organisateur'),
+    ]
+
+    role = models.PositiveSmallIntegerField(
+        choices=ROLES_UTILISATEURS,
         blank=True,
-        related_name="custom_user_set"
+        null=True,
+        verbose_name="Rôle"
     )
 
-    user_permissions = models.ManyToManyField(
-        Permission,
-        verbose_name="permissions utilisateur",
-        blank=True,
-        related_name="custom_user_set"
-    )
     class Meta:
         verbose_name = "Utilisateur"
         verbose_name_plural = "Utilisateurs"
         default_related_name = 'users_%(class)s_set'
 
     def __str__(self):
-        return str(self.username)
+        return f"{self.username}"
 
 class Category(models.Model):
     name = models.CharField(verbose_name="Nom de la catégorie", max_length=100, unique=True)
@@ -41,14 +45,13 @@ class Category(models.Model):
     def __str__(self):
         return str(self.name)
 
-
 def validate_start(value):
     if value < timezone.now():
         raise ValidationError("La date de début doit être dans le futur.")
 
 class Activity(models.Model):
     title = models.CharField(verbose_name="Titre", validators=[MinLengthValidator(5), MaxLengthValidator(200)])
-    description = models.CharField(verbose_name="Description", validators=[MinLengthValidator(10)])
+    description = models.CharField(verbose_name="Description", validators=[MinLengthValidator(10)],max_length=500)
     location_city = models.CharField(verbose_name="Ville", validators=[MinLengthValidator(2), MaxLengthValidator(100)])
     start_time = models.DateTimeField(verbose_name="Date et heure de début",validators=[validate_start])
     end_time = models.DateTimeField(verbose_name="Date et heure de fin")
