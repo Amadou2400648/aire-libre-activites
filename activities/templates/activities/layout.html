@@ -35,8 +35,10 @@
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUser">
                                 <li><a class="dropdown-item" href="{% url 'profil' user.id %}">Mon profil</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'logout' %}">Se déconnecter</a></li>
                             </ul>
+                        </li>
+                        <li>
+                            <a class="nav-link"  href="{% url 'logout' %}">Se déconnecter</a>
                         </li>
                     {% else %}
                         <li class="nav-item">

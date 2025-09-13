@@ -1,0 +1,47 @@
+{% extends "activities/layout.html" %}
+{% block content %}
+<div class="card border-primary mb-3">
+    <div class="card-header h2">{{title}}</div>
+    <div class="card-body">
+        <form method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert
+                                    {% if message.tags == 'success' %}alert-success
+                                    {% else %}alert-danger{% endif %}
+                                    alert-dismissible fade show mt-3" role="alert" aria-live="polite" aria-atomic="true">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="row">
+                <div class="col-md-12 mt-4">
+                    <label for="id_username">Nom d'utilisateur *</label>
+                    <input type="text" name="username"
+                        class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+                        value="{{ form.username.value|default:'' }}">
+                    {% for error in form.username.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12 mt-4">
+                    <label for="id_password">Mot de passe *</label>
+                    <input type="password" name="password"
+                        class="form-control {% if form.password.errors %}is-invalid{% endif %}">
+                    {% for error in form.password.errors %}
+                    <div class="invalid-feedback">{{ error }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-3">Se connecter</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
