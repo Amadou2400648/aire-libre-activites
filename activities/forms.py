@@ -22,21 +22,21 @@ class SignupForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
 
-        # Vérifier unicité username et email
         username = cleaned_data.get('username')
         email = cleaned_data.get('email')
-        if username and User.objects.filter(username=username).exists():
+
+        if username and User.objects.filter(username=username).exclude(pk=self.instance.pk).exists():
             self.add_error('username', "Ce nom d'utilisateur existe déjà.")
-        if email and User.objects.filter(email=email).exists():
+
+        if email and User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
             self.add_error('email', "Un compte avec ce courriel existe déjà.")
 
-        # Vérifier que les mots de passe correspondent
         password = cleaned_data.get("password")
         password_confirmation = cleaned_data.get("password_confirmation")
         if password and password_confirmation and password != password_confirmation:
             self.add_error('password_confirmation', "Les mots de passe ne correspondent pas.")
 
-        # Vérifier le type de fichier et la taille
+
         avatar = cleaned_data.get('avatar')
         if avatar:
             ext = os.path.splitext(avatar.name)[1].lower()

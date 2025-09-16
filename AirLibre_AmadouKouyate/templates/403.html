@@ -1,0 +1,50 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Erreur 403 - Accès interdit</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .error-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .error-card {
+            max-width: 600px;
+            text-align: center;
+            padding: 40px;
+            border-radius: 15px;
+            background: #fff;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+        .error-code {
+            font-size: 6rem;
+            font-weight: bold;
+            color: #fd7e14;
+        }
+        .btn-home {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-card">
+            <div class="error-code">403</div>
+            <h2 class="mb-3">Accès interdit</h2>
+            <p class="text-muted">
+                Vous n’avez pas la permission d’accéder à cette page.<br>
+                Si vous pensez qu’il s’agit d’une erreur, contactez l’administrateur.
+            </p>
+            <a href="{% url 'index' %}" class="btn btn-primary btn-home">Retour à l’accueil</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -20,36 +20,41 @@
             </button>
 
             <div class="collapse navbar-collapse" id="navbarColor01">
-                <ul class="navbar-nav ms-auto">
-                    {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'proposer_activite' %}">Proposer une activité</a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarUser" role="button"
-                               data-bs-toggle="dropdown" aria-expanded="false">
-                                <img src="{% static 'activities/images/default-avatar.png' %}" alt="Avatar"
-                                     class="rounded-circle me-2" width="30" height="30">
-                                {{ user.username }}
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUser">
-                                <li><a class="dropdown-item" href="{% url 'profil' user.id %}">Mon profil</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                            </ul>
-                        </li>
-                        <li>
-                            <a class="nav-link"  href="{% url 'logout' %}">Se déconnecter</a>
-                        </li>
+    <ul class="navbar-nav ms-auto align-items-center">
+        {% if user.is_authenticated %}
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'proposer_activite' %}">Proposer une activité</a>
+            </li>
+            <li class="nav-item d-flex align-items-center ms-3">
+                <a class="nav-link d-flex align-items-center" href="{% url 'profil' %}">
+                    {% if user.avatar %}
+                        <img src="{{ user.avatar.url }}" alt="Avatar"
+                             class="rounded-circle me-2" width="30" height="30">
                     {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">Se connecter</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'signup' %}">S'inscrire</a>
-                        </li>
+                        <img src="{% static 'activities/images/default-avatar.jpg' %}" alt="Avatar"
+                             class="rounded-circle me-2" width="30" height="30">
                     {% endif %}
-                </ul>
-            </div>
+                    <span>{{ user.username }}</span>
+                </a>
+            </li>
+            <li class="nav-item ms-3">
+                <a class="btn btn-outline-danger btn-sm" href="{% url 'logout' %}">
+                    Se déconnecter
+                </a>
+            </li>
+        {% else %}
+
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'login' %}">Se connecter</a>
+            </li>
+
+            <li class="nav-item ms-2">
+                <a class="btn btn-primary btn-sm" href="{% url 'signup' %}">S'inscrire</a>
+            </li>
+        {% endif %}
+    </ul>
+</div>
+
         </div>
     </nav>
 
