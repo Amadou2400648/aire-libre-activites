@@ -2,28 +2,27 @@
 {% load static %}
 
 {% block content %}
-{% if messages %}
-                {% for message in messages %}
-                <div class="alert
-                                    {% if message.tags == 'success' %}alert-success
-                                    {% else %}alert-danger{% endif %}
-                                    alert-dismissible fade show mt-3" role="alert" aria-live="polite" aria-atomic="true">
-                    {{ message }}
-                </div>
-                {% endfor %}
-            {% endif %}
 <div class="container mt-4">
 
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert
+                        {% if message.tags == 'success' %}alert-success
+                        {% else %}alert-danger{% endif %}
+                        alert-dismissible fade show mt-3" role="alert" aria-live="polite" aria-atomic="true">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
 
     <div class="card shadow-sm mb-4 p-4">
         <div class="card-header h2 mb-2">{{ title }}</div>
         <div class="d-flex align-items-center">
             {% if user.avatar %}
-                <img src="{{ user.avatar.url }}" alt="Avatar"
-                     class="rounded-circle me-3" width="100" height="100">
+            <img src="{{ user.avatar.url }}" alt="Avatar" class="rounded-circle me-3" width="100" height="100">
             {% else %}
-                <img src="{% static 'activities/images/default-avatar.jpg' %}" alt="Avatar"
-                     class="rounded-circle me-3" width="100" height="100">
+            <img src="{% static 'activities/images/default-avatar.jpg' %}" alt="Avatar" class="rounded-circle me-3"
+                width="100" height="100">
             {% endif %}
 
             <div>
@@ -37,41 +36,72 @@
         </div>
     </div>
 
+    <div class="row mt-4">
 
-    <div class="row">
-
+        <!-- Activités proposées -->
         <div class="col-md-6 mb-4">
-            <div class="card shadow-sm p-3">
-                <h5>Activités proposées</h5>
-                <hr>
-                {% if activites_proposees %}
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Activités proposées</h5>
+                </div>
+                <div class="card-body">
+                    {% if activites_proposees %}
                     <ul class="list-group list-group-flush">
                         {% for activite in activites_proposees %}
-                            <li class="list-group-item">{{ activite.titre }}</li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ activite.title }}</strong><br>
+                                <small class="text-muted">
+                                    {{ activite.start_time|date:"d/m/Y H:i" }} - {{ activite.location_city }}
+                                </small>
+                            </div>
+                            {% if activite.category %}
+                            <span class="badge bg-info text-dark">{{ activite.category.name }}</span>
+                            {% endif %}
+                            <a href="{% url 'activity_detail' activite.id %}"
+                                class="btn btn-sm btn-outline-primary ms-2">Voir</a>
+                        </li>
                         {% endfor %}
                     </ul>
-                {% else %}
+                    {% else %}
                     <p class="text-muted">Vous n'avez proposé aucune activité.</p>
-                {% endif %}
+                    {% endif %}
+                </div>
             </div>
         </div>
 
+        <!-- Inscriptions -->
         <div class="col-md-6 mb-4">
-            <div class="card shadow-sm p-3">
-                <h5>Inscriptions</h5>
-                <hr>
-                {% if inscriptions %}
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Inscriptions</h5>
+                </div>
+                <div class="card-body">
+                    {% if inscriptions %}
                     <ul class="list-group list-group-flush">
                         {% for activite in inscriptions %}
-                            <li class="list-group-item">{{ activite.titre }}</li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ activite.title }}</strong><br>
+                                <small class="text-muted">
+                                    {{ activite.start_time|date:"d/m/Y H:i" }} - {{ activite.location_city }}
+                                </small>
+                            </div>
+                            {% if activite.category %}
+                            <span class="badge bg-info text-dark">{{ activite.category.name }}</span>
+                            {% endif %}
+                            <a href="{% url 'activity_detail' activite.id %}"
+                                class="btn btn-sm btn-outline-success ms-2">Voir</a>
+                        </li>
                         {% endfor %}
                     </ul>
-                {% else %}
+                    {% else %}
                     <p class="text-muted">Vous n'êtes inscrit à aucune activité.</p>
-                {% endif %}
+                    {% endif %}
+                </div>
             </div>
         </div>
-    </div>
 
+    </div>
 </div>
 {% endblock %}

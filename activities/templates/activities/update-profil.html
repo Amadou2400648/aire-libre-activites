@@ -10,8 +10,8 @@
 
             <div class="row">
                 <div class="col-md-6 mt-4">
-                    <label for="id_first_name">Prénom *</label>
-                    <input type="text" name="first_name"
+                    <label for="first_name">Prénom *</label>
+                    <input type="text" name="first_name" id="first_name"
                         class="form-control {% if form.first_name.errors %}is-invalid{% endif %}"
                         value="{{ form.first_name.value|default:user.first_name }}">
                     {% for error in form.first_name.errors %}
@@ -20,8 +20,8 @@
                 </div>
 
                 <div class="col-md-6 mt-4">
-                    <label for="id_last_name">Nom *</label>
-                    <input type="text" name="last_name"
+                    <label for="last_name">Nom *</label>
+                    <input type="text" name="last_name" id="last_name"
                         class="form-control {% if form.last_name.errors %}is-invalid{% endif %}"
                         value="{{ form.last_name.value|default:user.last_name }}">
                     {% for error in form.last_name.errors %}
@@ -32,8 +32,8 @@
 
             <div class="row">
                 <div class="col-md-6 mt-4">
-                    <label for="id_email">Courriel *</label>
-                    <input type="email" name="email"
+                    <label for="email">Courriel *</label>
+                    <input type="email" name="email" id="email"
                         class="form-control {% if form.email.errors %}is-invalid{% endif %}"
                         value="{{ form.email.value|default:user.email }}">
                     {% for error in form.email.errors %}
@@ -42,8 +42,8 @@
                 </div>
 
                 <div class="col-md-6 mt-4">
-                    <label for="id_avatar">Avatar</label>
-                    <input type="file" name="avatar" accept=".png, .jpg, .jpeg"
+                    <label for="avatar">Avatar</label>
+                    <input type="file" name="avatar" id="avatar" accept=".png, .jpg, .jpeg"
                         class="form-control {% if form.avatar.errors %}is-invalid{% endif %}">
                     {% for error in form.avatar.errors %}
                         <div class="invalid-feedback">{{ error }}</div>
@@ -53,8 +53,8 @@
 
             <div class="row">
                 <div class="col-md-12 mt-4">
-                    <label for="id_bio">Biographie</label>
-                    <textarea name="bio" rows="3"
+                    <label for="bio">Biographie</label>
+                    <textarea name="bio" rows="3" id="bio"
                         class="form-control {% if form.bio.errors %}is-invalid{% endif %}">{{ form.bio.value|default:user.bio|default:'' }}</textarea>
                     {% for error in form.bio.errors %}
                         <div class="invalid-feedback">{{ error }}</div>

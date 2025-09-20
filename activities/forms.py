@@ -1,6 +1,9 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.core.files.storage import FileSystemStorage
+from .models import Activity
+from django.core.validators import MinLengthValidator
+from django.core.exceptions import ValidationError
 import os
 
 User = get_user_model()
@@ -46,7 +49,6 @@ class SignupForm(forms.ModelForm):
             if avatar.size > 5 * 1024 * 1024:
                 self.add_error('avatar', "Le fichier est trop volumineux (5MB maximum).")
 
-
 class LoginForm(forms.Form):
     username = forms.CharField(
         required=True,
@@ -59,4 +61,93 @@ class LoginForm(forms.Form):
         label="Mot de passe",
         widget=forms.PasswordInput(attrs={'class': 'form-control'}),
         error_messages={'required': "Ce champ est obligatoire."}
+    )
+
+class ActivityForm(forms.ModelForm):
+    start_time = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local", "class": "form-control"}),
+        label="Date et heure de début",
+        error_messages={
+            "required": "La date et l'heure de début sont obligatoires.",
+            "invalid": "Format de date et heure invalide."
+        }
+    )
+    end_time = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local", "class": "form-control"}),
+        label="Date et heure de fin",
+        error_messages={
+            "required": "La date et l'heure de fin sont obligatoires.",
+            "invalid": "Format de date et heure invalide."
+        }
+    )
+
+    class Meta:
+        model = Activity
+        fields = ["title", "description", "location_city", "category", "start_time", "end_time"]
+        widgets = {
+            "title": forms.TextInput(attrs={"class": "form-control"}),
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 4}),
+            "location_city": forms.TextInput(attrs={"class": "form-control"}),
+            "category": forms.Select(attrs={"class": "form-select"}),
+        }
+        labels = {
+            "title": "Titre",
+            "description": "Description",
+            "location_city": "Ville",
+            "category": "Catégorie (facultatif)"
+        }
+        help_texts = {
+            "category": "Ce champ est facultatif."
+        }
+        error_messages = {
+            "title": {
+                "required": "Le titre est obligatoire.",
+            },
+            "description": {
+                "required": "La description est obligatoire.",
+            },
+            "location_city": {
+                "required": "La ville est obligatoire.",
+            }
+        }
+
+    def clean_title(self):
+        title = self.cleaned_data.get("title")
+        if title and len(title) < 5:
+            raise ValidationError("Le titre doit contenir au moins 5 caractères.")
+        return title
+
+    def clean_description(self):
+        description = self.cleaned_data.get("description")
+        if description and len(description) < 10:
+            raise ValidationError("La description doit contenir au moins 10 caractères.")
+        return description
+
+    def clean_location_city(self):
+        city = self.cleaned_data.get("location_city")
+        if city and len(city) < 2:
+            raise ValidationError("Le nom de la ville doit contenir au moins 2 caractères.")
+        return city
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start = cleaned_data.get("start_time")
+        end = cleaned_data.get("end_time")
+        if start and end and end <= start:
+            self.add_error("end_time", "La date de fin doit être postérieure à la date de début.")
+    start_time = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local", "class": "form-control"}),
+        label="Date et heure de début",
+        error_messages={
+            "required": "La date et l'heure de début sont obligatoires.",
+            "invalid": "Format de date et heure invalide."
+        }
+    )
+    end_time = forms.DateTimeField(
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local", "class": "form-control"}),
+        label="Date et heure de fin",
+        error_messages={
+            "required": "La date et l'heure de fin sont obligatoires.",
+            "invalid": "Format de date et heure invalide."
+        }
     )
