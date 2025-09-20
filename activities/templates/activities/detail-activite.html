@@ -15,28 +15,33 @@
                     <p><strong>Ville :</strong> {{ activity.location_city }}</p>
                     <p><strong>Qualité de l'air :</strong>
                         <span class="fw-bold">
-                        {% if aqi != "Non disponible" %}
-                            {% if aqi <= 50 %}
-                                <span class="text-success">{{ aqi }} (Bon)</span>
-                            {% elif aqi <= 100 %}
-                                <span class="text-warning">{{ aqi }} (Modéré)</span>
-                            {% elif aqi <= 150 %}
-                                <span class="text-orange">{{ aqi }} (Médiocre)</span>
-                            {% elif aqi <= 200 %}
-                                <span class="text-danger">{{ aqi }} (Mauvais)</span>
+                            {% if air_quality|floatformat:"0" != "Non disponible" and air_quality|floatformat:"0" != "Ville introuvable" and air_quality|floatformat:"0" != "Erreur API" %}
+                                {% if air_quality|add:0 <= 50 %}
+                                    <span class="text-success">{{ air_quality }} (Bon)</span>
+                                {% elif air_quality|add:0 <= 100 %}
+                                    <span class="text-warning">{{ air_quality }} (Modéré)</span>
+                                {% elif air_quality|add:0 <= 150 %}
+                                    <span style="color: orange;">{{ air_quality }} (Médiocre)</span>
+                                {% elif air_quality|add:0 <= 200 %}
+                                    <span class="text-danger">{{ air_quality }} (Mauvais)</span>
+                                {% else %}
+                                    <span class="text-dark">{{ air_quality }} (Dangereux)</span>
+                                {% endif %}
                             {% else %}
-                                <span class="text-dark">{{ aqi }} (Dangereux)</span>
+                                {{ air_quality }}
                             {% endif %}
-                        {% else %}
-                            {{ aqi }}
-                        {% endif %}
                         </span>
                     </p>
                 </div>
                 <div class="col-md-6">
                     <p><strong>Date début :</strong> {{ activity.start_time|date:"d/m/Y H:i" }}</p>
                     <p><strong>Date fin :</strong> {{ activity.end_time|date:"d/m/Y H:i" }}</p>
-                    <p><strong>Organisateur :</strong>{{ activity.proposer.username }}</p>
+                    <p><strong>Organisateur :</strong>
+                        {% if user.is_authenticated and user == activity.proposer %}
+                            Moi
+                        {% else %}
+                            {{ activity.proposer.username }}
+                        {% endif %}</p>
                 </div>
             </div>
 
@@ -58,7 +63,7 @@
             {% if user.is_authenticated %}
                 <form method="post" class="d-flex gap-2">
                     {% csrf_token %}
-                    {% if connecte %}
+                    {% if est_inscrit %}
                         <button type="submit" name="desinscrit" class="btn btn-outline-danger flex-fill">Se désinscrire</button>
                     {% else %}
                         <button type="submit" name="inscrit" class="btn btn-outline-success flex-fill">S'inscrire</button>

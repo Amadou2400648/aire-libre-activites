@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-x*+md39j4b^8zf2h^z&dl+%l0dig1!&_a2i(f^61=*zc23u1qp'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1','localhost']
 
@@ -133,3 +133,6 @@ MEDIA_ROOT = BASE_DIR / "media"
 # Limite de taille pour les fichiers téléversés (optionnel)
 FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5MB
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB
+
+#Clé du token pour API
+AQICN_TOKEN = "233817a21811b13d4cd9a4d15eaece97973ed527"

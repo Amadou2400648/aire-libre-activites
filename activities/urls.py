@@ -1,3 +1,7 @@
+"""
+Ce module contient les routes pour afficher les vues et soumettre les formulaires de l'application
+"""
+
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static

@@ -1,34 +1,46 @@
-from django import forms
-from django.contrib.auth import get_user_model
-from django.core.files.storage import FileSystemStorage
-from .models import Activity
-from django.core.validators import MinLengthValidator
-from django.core.exceptions import ValidationError
+"""Contient les formulaires utilisés dans l'application AirLibre"""
 import os
+from django import forms
+from django.core.exceptions import ValidationError
+from django.contrib.auth import get_user_model
+from .models import Activity
 
 User = get_user_model()
 
 class SignupForm(forms.ModelForm):
-    first_name = forms.CharField(required=True, label="Prénom",error_messages={'required': 'Ce champ est obligatoire.'})
-    last_name = forms.CharField(required=True, label="Nom",error_messages={'required': 'Ce champ est obligatoire.'})
-    email = forms.EmailField(required=True, label="Courriel",error_messages={'required': 'Ce champ est obligatoire.'})
-    username = forms.CharField(required=True, label="Nom d'utilisateur",error_messages={'required': 'Ce champ est obligatoire.'})
-    password = forms.CharField(widget=forms.PasswordInput, required=True, label="Mot de passe",error_messages={'required': 'Ce champ est obligatoire.'})
-    password_confirmation = forms.CharField(widget=forms.PasswordInput, required=True, label="Confirmer le mot de passe",error_messages={'required': 'Ce champ est obligatoire.'})
+    """Formulaire d'inscription pour la création d'un nouvel utilisateur."""
+    first_name = forms.CharField(required=True, label="Prénom",
+                                 error_messages={'required': 'Ce champ est obligatoire.'})
+    last_name = forms.CharField(required=True, label="Nom",
+                                error_messages={'required': 'Ce champ est obligatoire.'})
+    email = forms.EmailField(required=True, label="Courriel",
+                             error_messages={'required': 'Ce champ est obligatoire.'})
+    username = forms.CharField(required=True, label="Nom d'utilisateur",
+                               error_messages={'required': 'Ce champ est obligatoire.'})
+    password = forms.CharField(widget=forms.PasswordInput, required=True, label="Mot de passe",
+                               error_messages={'required': 'Ce champ est obligatoire.'})
+    password_confirmation = forms.CharField(widget=forms.PasswordInput, required=True,
+                                            label="Confirmer le mot de passe",
+                                            error_messages=
+                                            {'required': 'Ce champ est obligatoire.'})
     avatar = forms.ImageField(required=False, label="Avatar")
-    bio = forms.CharField(widget=forms.Textarea(attrs={'rows':3}), required=False, label="Biographie")
+    bio = forms.CharField(widget=forms.Textarea(attrs={'rows':3}),
+                          required=False, label="Biographie")
 
     class Meta:
+        """Classe Meta du formulaire SignupForm."""
         model = User
         fields = ['first_name', 'last_name', 'email', 'username']
 
     def clean(self):
+        """Méthode de validation personnalisée du formulaire SignupForm."""
         cleaned_data = super().clean()
 
         username = cleaned_data.get('username')
         email = cleaned_data.get('email')
 
-        if username and User.objects.filter(username=username).exclude(pk=self.instance.pk).exists():
+        if username and User.objects.filter(username=username)\
+        .exclude(pk=self.instance.pk).exists():
             self.add_error('username', "Ce nom d'utilisateur existe déjà.")
 
         if email and User.objects.filter(email=email).exclude(pk=self.instance.pk).exists():
@@ -50,6 +62,7 @@ class SignupForm(forms.ModelForm):
                 self.add_error('avatar', "Le fichier est trop volumineux (5MB maximum).")
 
 class LoginForm(forms.Form):
+    """Formulaire de connexion d'un utilisateur."""
     username = forms.CharField(
         required=True,
         label="Nom d'utilisateur",
@@ -64,6 +77,7 @@ class LoginForm(forms.Form):
     )
 
 class ActivityForm(forms.ModelForm):
+    """Formulaire de création d'une activité."""
     start_time = forms.DateTimeField(
         widget=forms.DateTimeInput(attrs={"type": "datetime-local", "class": "form-control"}),
         label="Date et heure de début",
@@ -82,6 +96,7 @@ class ActivityForm(forms.ModelForm):
     )
 
     class Meta:
+        """Classe Meta du formulaire ActivityForm."""
         model = Activity
         fields = ["title", "description", "location_city", "category", "start_time", "end_time"]
         widgets = {
@@ -112,24 +127,31 @@ class ActivityForm(forms.ModelForm):
         }
 
     def clean_title(self):
+        """  Valide le champ 'title' du formulaire."""
         title = self.cleaned_data.get("title")
         if title and len(title) < 5:
             raise ValidationError("Le titre doit contenir au moins 5 caractères.")
         return title
 
     def clean_description(self):
+        """  Valide le champ 'description' du formulaire."""
         description = self.cleaned_data.get("description")
         if description and len(description) < 10:
             raise ValidationError("La description doit contenir au moins 10 caractères.")
         return description
 
     def clean_location_city(self):
+        """  Valide le champ 'location_city' du formulaire."""
         city = self.cleaned_data.get("location_city")
         if city and len(city) < 2:
             raise ValidationError("Le nom de la ville doit contenir au moins 2 caractères.")
         return city
 
     def clean(self):
+        """
+        Valide les dates de début et de fin d'une activité.
+        Vérifie que la date de fin est postérieure à la date de début.
+        """
         cleaned_data = super().clean()
         start = cleaned_data.get("start_time")
         end = cleaned_data.get("end_time")

@@ -1,51 +1,58 @@
+"""
+Ce module contient les vues pour gérer les activités,
+l'inscription des utilisateurs et la connexion.
+"""
 
-from django.shortcuts import render,redirect
-from django.contrib.auth import logout, authenticate, login
-from django.http import HttpResponse
-from .forms import SignupForm, LoginForm, ActivityForm
-from django.contrib import messages
-from django.core.files.storage import FileSystemStorage
-from django.core.exceptions import PermissionDenied
-from django.contrib.auth import get_user_model
-from .models import Activity, Category
-from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator
-from django.utils import timezone
-from django.shortcuts import get_object_or_404
+from datetime import datetime
+
 import requests
-from django.urls import reverse
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout, get_user_model
+from django.core.exceptions import PermissionDenied
+from django.core.files.storage import FileSystemStorage
+from django.core.paginator import Paginator
+from django.shortcuts import get_object_or_404, render, redirect
+from django.utils import timezone
+
+from .forms import ActivityForm, LoginForm, SignupForm
+from .models import Activity, Category
+
 
 User = get_user_model()
 
-#page d'accueil
+
 def index(request):
-    view_filter = request.GET.get("view", "all")
+    """Permet d'afficher la liste des activités à l'accueil"""
+    view_filter = request.GET.get("view", "toutes_activites")
     category = request.GET.get("category")
+    liste_categories = Category.objects.all()
 
     activities = Activity.objects.filter(start_time__gte=timezone.now()).order_by("start_time")
 
     if category and category != "None":
         activities = activities.filter(category_id=category)
 
-    if view_filter == "mine" and request.user.is_authenticated:
+    if view_filter == "mes_activites" and request.user.is_authenticated:
         activities = activities.filter(proposer=request.user)
-    elif view_filter == "attending" and request.user.is_authenticated:
+    elif view_filter == "mes_inscriptions" and request.user.is_authenticated:
         activities = activities.filter(attendees=request.user)
 
     paginator = Paginator(activities, 3)
     page_number = request.GET.get("page")
-    page_obj = paginator.get_page(page_number)
+    page = paginator.get_page(page_number)
 
     context = {
-        "page_obj": page_obj,
-        "categories": Category.objects.all(),
+        "page": page,
+        "categories":liste_categories,
         "view_filter": view_filter,
         "category_filter": category,
     }
     return render(request, "activities/index.html", context)
 
-#inscription ou affichage de la page d'inscription
+
 def signup(request):
+    """Permet d'afficher la page d'inscription ou de soumettre le formulaire d'inscription"""
     if request.method == "POST":
         form = SignupForm(request.POST, request.FILES)
         if form.is_valid():
@@ -54,10 +61,12 @@ def signup(request):
 
             avatar = form.cleaned_data.get('avatar')
             if avatar:
+                now_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+                filename = f"user_avatar_{now_str}"
+
                 fs = FileSystemStorage()
-                filename = fs.save(avatar.name, avatar)
-                uploaded_file_url = fs.url(filename)
-                user.avatar = filename
+                saved_filename = fs.save(filename, avatar)
+                user.avatar = saved_filename
 
             bio = form.cleaned_data.get('bio')
             if bio:
@@ -75,8 +84,9 @@ def signup(request):
         'form': form
     })
 
-#cocnnexion ou affichage de la page de connexion
+
 def login_user(request):
+    """Permet de se connecter ou d'afficher de la page de connexion"""
     if request.method == "POST":
         form = LoginForm(request.POST)
         if form.is_valid():
@@ -98,17 +108,21 @@ def login_user(request):
         'form': form
     })
 
-#deconnexion de l'utilisateur
-def logout_user(request):
-    logout(request)
 
+def logout_user(request):
+    """Permet de se déconnecter"""
+    if not request.user.is_authenticated:
+        raise PermissionDenied("Vous devez être connecté pour accéder à cette page.")
+
+    logout(request)
     storage = messages.get_messages(request)
     for _ in storage:
         pass
     return redirect('login')
 
-#Affichage du profil
+
 def profil(request):
+    """Permet d'afficher la page du profil"""
     if not request.user.is_authenticated:
         raise PermissionDenied("Vous devez être connecté pour accéder à cette page.")
 
@@ -125,8 +139,9 @@ def profil(request):
     }
     return render(request, 'activities/profil.html', context)
 
-#Modification du profil
+
 def update_profil(request):
+    """Permet de modifier le profil utilisateur"""
     if not request.user.is_authenticated:
         raise PermissionDenied("Vous devez être connecté pour accéder à cette page.")
 
@@ -169,9 +184,12 @@ def update_profil(request):
         user.bio = bio or ''
 
         if avatar:
+            now_str = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"user_avatar_{now_str}"
+
             fs = FileSystemStorage()
-            filename = fs.save(avatar.name, avatar)
-            user.avatar = filename
+            saved_filename = fs.save(filename, avatar)
+            user.avatar = saved_filename
 
         user.save()
         messages.success(request, "Votre profil a été modifié avec succès !")
@@ -188,10 +206,12 @@ def update_profil(request):
             'bio': user.bio or ''
         })
 
-#Formulaire pour l'enregistrement de l'activité
+
 def proposer_activite(request):
+    """Permet d'enregistrer une activité ou d'afficher le formulaire d'enregistrement des activités"""
     if not request.user.is_authenticated:
         raise PermissionDenied("Vous devez être connecté pour accéder à cette page.")
+
     if request.method == "POST":
         form = ActivityForm(request.POST)
         if form.is_valid():
@@ -205,35 +225,44 @@ def proposer_activite(request):
 
     return render(request, "activities/activity_create.html", {"form": form})
 
-#Détail de l'activité
-def activity_detail(request, pk):
-    activity = get_object_or_404(Activity, pk=pk)
-    aqi = None
+
+def get_air_quality(city: str):
+    """Permet de se connecter à l'API et d'avoir les informations de la qualité de l'air"""
+    token = settings.AQICN_TOKEN
+    api_url = f"https://api.waqi.info/feed/{city}/?token={token}"
 
     try:
-        api_url = f"https://api.waqi.info/feed/{activity.location_city}/?token=233817a21811b13d4cd9a4d15eaece97973ed527"
-        response = requests.get(api_url)
+        response = requests.get(api_url, timeout=5)
         if response.status_code == 200:
             data = response.json()
-            aqi = data["data"]["aqi"]
-    except Exception:
-        aqi = "Non disponible"
+            if data.get("status") == "ok":
+                air_quality = data["data"]["aqi"]
+                return air_quality if air_quality is not None else "Non disponible"
+            else:
+                return "Ville introuvable"
+        return "Erreur API"
+    except requests.RequestException:
+        return "Qualité de l'air non disponible"
 
-    connecte = False
-    if request.user.is_authenticated:
-        connecte = activity.attendees.filter(id=request.user.id).exists()
 
-        if request.method == "POST":
-            if "inscrit" in request.POST:
-                activity.attendees.add(request.user)
-                return redirect(reverse("activity_detail", args=[activity.id]))
-            elif "desinscrit" in request.POST:
-                activity.attendees.remove(request.user)
-                return redirect(reverse("activity_detail", args=[activity.id]))
+def activity_detail(request, pk):
+    """Permet d'afficher les détails d'une activité"""
+    activity = get_object_or_404(Activity, pk=pk)
+    air_quality = get_air_quality(activity.location_city)
+
+    est_inscrit = activity.attendees.filter(id=request.user.id).exists()
+
+    if request.method == "POST":
+        if "inscrit" in request.POST:
+            activity.attendees.add(request.user)
+            return redirect("activity_detail", activity.id)
+        elif "desinscrit" in request.POST:
+            activity.attendees.remove(request.user)
+            return redirect("activity_detail", activity.id)
 
     context = {
         "activity": activity,
-        "aqi": aqi,
-        "connecte": connecte,
+        "air_quality": air_quality,
+        "est_inscrit": est_inscrit,
     }
     return render(request, "activities/detail-activite.html", context)
