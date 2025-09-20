@@ -208,7 +208,10 @@ def update_profil(request):
 
 
 def proposer_activite(request):
-    """Permet d'enregistrer une activité ou d'afficher le formulaire d'enregistrement des activités"""
+    """
+        Permet d'enregistrer une activité ou d'afficher
+        le formulaire d'enregistrement des activités
+    """
     if not request.user.is_authenticated:
         raise PermissionDenied("Vous devez être connecté pour accéder à cette page.")
 

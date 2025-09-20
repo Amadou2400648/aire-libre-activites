@@ -127,7 +127,7 @@ class ActivityForm(forms.ModelForm):
         }
 
     def clean_title(self):
-        """  Valide le champ 'title' du formulaire."""
+        """ Valide le champ 'title' du formulaire."""
         title = self.cleaned_data.get("title")
         if title and len(title) < 5:
             raise ValidationError("Le titre doit contenir au moins 5 caractères.")

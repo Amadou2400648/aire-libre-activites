@@ -10,8 +10,8 @@ from django.core.validators import MinLengthValidator, MaxLengthValidator
 
 class User(AbstractUser):
     """Modifie le modèle User par défaut pour l’adapter à notre application."""
-    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True )
-    bio = models.TextField(max_length=500, null=True, blank=True )
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
+    bio = models.TextField(max_length=500, null=True, blank=True)
 
     ADMIN = 1
     PARTICIPANT = 2
@@ -77,7 +77,8 @@ class Activity(models.Model):
     attendees = models.ManyToManyField(User, verbose_name="Participants",
                                        related_name='attended_activities')
     category = models.ForeignKey(Category, verbose_name="Catégorie",
-                                 related_name='activities',on_delete=models.SET_NULL,null=True)
+                                 related_name='activities',
+                                 on_delete=models.SET_NULL,null=True,blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
