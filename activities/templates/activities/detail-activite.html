@@ -1,78 +1,82 @@
-{% extends "activities/layout.html" %}
-
-{% block content %}
+{% extends "activities/layout.html" %} {% block content %}
 <div class="container mt-5">
-    <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white">
-            <h2 class="mb-0">{{ activity.title }}</h2>
-        </div>
-        <div class="card-body">
-            <div class="row mb-3">
-
-                <div class="col-md-6">
-                    <p><strong>Description :</strong> {{ activity.description }}</p>
-                    <p><strong>Catégorie :</strong> <span class="badge bg-info text-dark">{{ activity.category.name }}</span></p>
-                    <p><strong>Ville :</strong> {{ activity.location_city }}</p>
-                    <p><strong>Qualité de l'air :</strong>
-                        <span class="fw-bold">
-                            {% if air_quality|floatformat:"0" != "Non disponible" and air_quality|floatformat:"0" != "Ville introuvable" and air_quality|floatformat:"0" != "Erreur API" %}
-                                {% if air_quality|add:0 <= 50 %}
-                                    <span class="text-success">{{ air_quality }} (Bon)</span>
-                                {% elif air_quality|add:0 <= 100 %}
-                                    <span class="text-warning">{{ air_quality }} (Modéré)</span>
-                                {% elif air_quality|add:0 <= 150 %}
-                                    <span style="color: orange;">{{ air_quality }} (Médiocre)</span>
-                                {% elif air_quality|add:0 <= 200 %}
-                                    <span class="text-danger">{{ air_quality }} (Mauvais)</span>
-                                {% else %}
-                                    <span class="text-dark">{{ air_quality }} (Dangereux)</span>
-                                {% endif %}
-                            {% else %}
-                                {{ air_quality }}
-                            {% endif %}
-                        </span>
-                    </p>
-                </div>
-                <div class="col-md-6">
-                    <p><strong>Date début :</strong> {{ activity.start_time|date:"d/m/Y H:i" }}</p>
-                    <p><strong>Date fin :</strong> {{ activity.end_time|date:"d/m/Y H:i" }}</p>
-                    <p><strong>Organisateur :</strong>
-                        {% if user.is_authenticated and user == activity.proposer %}
-                            Moi
-                        {% else %}
-                            {{ activity.proposer.username }}
-                        {% endif %}</p>
-                </div>
-            </div>
-
-            <h4>Participants inscrits :</h4>
-            <ul class="list-group mb-3">
-                {% for participant in activity.attendees.all %}
-                    <li class="list-group-item">
-                        {% if user.is_authenticated and user == participant %}
-                            Moi
-                        {% else %}
-                            {{ participant.username }}
-                        {% endif %}
-                    </li>
-                {% empty %}
-                    <li class="list-group-item">Aucun participant pour l’instant</li>
-                {% endfor %}
-            </ul>
-
-            {% if user.is_authenticated %}
-                <form method="post" class="d-flex gap-2">
-                    {% csrf_token %}
-                    {% if est_inscrit %}
-                        <button type="submit" name="desinscrit" class="btn btn-outline-danger flex-fill">Se désinscrire</button>
-                    {% else %}
-                        <button type="submit" name="inscrit" class="btn btn-outline-success flex-fill">S'inscrire</button>
-                    {% endif %}
-                </form>
-            {% else %}
-                <p class="mt-3"><a href="{% url 'login' %}" class="btn btn-primary">Connectez-vous</a> pour vous inscrire.</p>
-            {% endif %}
-        </div>
+  <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+      <h2 class="mb-0">{{ activity.title }}</h2>
     </div>
+    <div class="card-body">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <p><strong>Description :</strong> {{ activity.description }}</p>
+          <p>
+            <strong>Catégorie :</strong>
+            <span class="badge bg-info text-dark"
+              >{{ activity.category.name }}</span
+            >
+          </p>
+          <p><strong>Ville :</strong> {{ activity.location_city }}</p>
+          <p>
+            <strong>Qualité de l'air :</strong>
+            <span class="fw-bold">
+              <span>{{ air_quality }}</span>
+            </span>
+          </p>
+        </div>
+        <div class="col-md-6">
+          <p>
+            <strong>Date début :</strong>
+            {{activity.start_time|date:"d/m/YH:i"}}
+          </p>
+          <p>
+            <strong>Date fin :</strong> {{ activity.end_time|date:"d/m/Y H:i" }}
+          </p>
+          <p>
+            <strong>Organisateur :</strong>
+            {% if user.is_authenticated and user == activity.proposer %} Moi {%
+            else %} {{ activity.proposer.username }} {% endif %}
+          </p>
+        </div>
+      </div>
+
+      <h4>Participants inscrits :</h4>
+      <ul class="list-group mb-3">
+        {% for participant in activity.attendees.all %}
+        <li class="list-group-item">
+          {% if user.is_authenticated and user == participant %} Moi {% else %}
+          {{ participant.username }} {% endif %}
+        </li>
+        {% empty %}
+        <li class="list-group-item">Aucun participant pour l’instant</li>
+        {% endfor %}
+      </ul>
+
+      {% if user.is_authenticated %}
+      <form method="post" class="d-flex gap-2">
+        {% csrf_token %} {% if est_inscrit %}
+        <button
+          type="submit"
+          name="desinscrit"
+          class="btn btn-outline-danger flex-fill"
+        >
+          Se désinscrire
+        </button>
+        {% else %}
+        <button
+          type="submit"
+          name="inscrit"
+          class="btn btn-outline-success flex-fill"
+        >
+          S'inscrire
+        </button>
+        {% endif %}
+      </form>
+      {% else %}
+      <p class="mt-3">
+        <a href="{% url 'login' %}" class="btn btn-primary">Connectez-vous</a>
+        pour vous inscrire.
+      </p>
+      {% endif %}
+    </div>
+  </div>
 </div>
 {% endblock %}
