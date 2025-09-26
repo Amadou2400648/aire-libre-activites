@@ -4,14 +4,14 @@ Il personnalise l'affichage dans l'interface d'administration avec list_display,
 search_fields, ordering, etc.
 """
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 from .models import User, Category, Activity
-
 
 # -------------------------
 # Admin pour le modèle User
 # -------------------------
 @admin.register(User)
-class CustomUserAdmin(admin.ModelAdmin):
+class CustomUserAdmin(UserAdmin):
     """Personnalisation de l'affichage du modèle User dans l'admin."""
     list_display = (
         'username', 'email', 'first_name', 'last_name',
